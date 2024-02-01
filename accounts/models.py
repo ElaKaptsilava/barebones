@@ -1,4 +1,6 @@
+import csv
 import os
+
 from PIL import Image
 
 from django.contrib.auth.models import AbstractUser
@@ -6,7 +8,7 @@ from django.db import models
 
 
 def user_directory_path(instance, filename):
-    return f'user_{instance.pk}_{instance.username}_{instance.last_name}/{filename}'
+    return f'user_{instance.username}_{instance.last_name}/{filename}'
 
 
 class CustomUser(AbstractUser):
@@ -28,12 +30,30 @@ class CustomUser(AbstractUser):
         return "{}".format(self.email)
 
     def __repr__(self):
-        return f"CustomUser('{self.email}', '{self.username}, {self.last_name}"
+        return f"CustomUser('{self.email}', '{self.username}, {self.last_name})"
 
     def save(self, *args, **kwargs):
-        super(CustomUser, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
         img = Image.open(self.image.path)
         if img.height > 300 or img.width > 300:
             output_size = (300, 300)
             img.thumbnail(output_size)
             img.save(self.image.path)
+        self.write_user_profile_to_file()
+
+    def write_user_profile_to_file(self):
+        file_path = "users.csv"
+        header = ["pk", "User name", "Password", "Email", "Gender", "Phone number"]
+        user_info = {
+            "pk": self.pk,
+            "User name": self.username,
+            "Password": hash(self.password),
+            "Email": self.username,
+            "Gender": self.gender,
+            "Phone number": self.phone_no,
+        }
+        with open(file_path, "w+", newline="") as file:
+            csvwriter = csv.DictWriter(file, fieldnames=header)
+            if os.path.getsize(file_path) == 0:
+                csvwriter.writeheader()
+            csvwriter.writerow(user_info)

@@ -1,12 +1,16 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
 
-from accounts.forms import CustomUserCreationForm
-
-
-def home(request):
-    return render(request, 'accounts/home.html')
+from .models import CustomUser
+from .serializers import UserSerializer, RegisterSerializer
 
 
-def register(request):
-    form = CustomUserCreationForm()
-    return render(request, 'accounts/register.html', {form: 'form'})
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+
+
+class RegisterViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = (AllowAny, )

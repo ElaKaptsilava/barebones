@@ -1,2 +1,5 @@
 Django~=5.0.1
 pillow
+opencsv
+djangorestframework
+djangorestframework-simplejwt
