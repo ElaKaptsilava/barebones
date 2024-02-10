@@ -8,7 +8,7 @@ from django.db import models
 
 
 def user_directory_path(instance, filename):
-    return f'user_{instance.username}_{instance.last_name}/{filename}'
+    return f'user_{instance.email}_{instance.last_name}/{filename}'
 
 
 class CustomUser(AbstractUser):
@@ -41,19 +41,17 @@ class CustomUser(AbstractUser):
             img.save(self.image.path)
         self.write_user_profile_to_file()
 
-    def write_user_profile_to_file(self):
+    def write_user_profile_to_file(self): # 2 func
         file_path = "users.csv"
-        header = ["pk", "User name", "Password", "Email", "Gender", "Phone number"]
-        user_info = {
-            "pk": self.pk,
-            "User name": self.username,
-            "Password": hash(self.password),
-            "Email": self.username,
-            "Gender": self.gender,
-            "Phone number": self.phone_no,
-        }
-        with open(file_path, "w+", newline="") as file:
-            csvwriter = csv.DictWriter(file, fieldnames=header)
+        header = ["email", "username", "password"]
+        user_info = [self.email, self.username, self.password]
+
+        with open(file_path, "a", newline="") as csvfile:
+            csvwriter = csv.writer(csvfile)
             if os.path.getsize(file_path) == 0:
-                csvwriter.writeheader()
-            csvwriter.writerow(user_info)
+                csvwriter.writerow(header)
+                users = CustomUser.objects.all()
+                get_users = [[user.email, user.username, user.password] for user in users]
+                csvwriter.writerows(get_users)
+            else:
+                csvwriter.writerow(user_info)
